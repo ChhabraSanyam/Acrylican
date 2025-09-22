@@ -9,16 +9,16 @@ CREATE EXTENSION IF NOT EXISTS "btree_gin";
 -- Create application user with limited privileges
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'artisan_app') THEN
-        CREATE ROLE artisan_app WITH LOGIN PASSWORD 'app_password_to_be_changed';
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'acrylican_app') THEN
+        CREATE ROLE acrylican_app WITH LOGIN PASSWORD 'app_password_to_be_changed';
     END IF;
 END
 $$;
 
 -- Grant necessary permissions
-GRANT CONNECT ON DATABASE artisan_platform TO artisan_app;
-GRANT USAGE ON SCHEMA public TO artisan_app;
-GRANT CREATE ON SCHEMA public TO artisan_app;
+GRANT CONNECT ON DATABASE acrylican_platform TO acrylican_app;
+GRANT USAGE ON SCHEMA public TO acrylican_app;
+GRANT CREATE ON SCHEMA public TO acrylican_app;
 
 -- Set up logging table for audit purposes
 CREATE TABLE IF NOT EXISTS audit_log (
@@ -37,4 +37,4 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_timestamp ON audit_log(timestamp);
 CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id);
 
 -- Set up connection limits
-ALTER ROLE artisan_app CONNECTION LIMIT 20;
+ALTER ROLE acrylican_app CONNECTION LIMIT 20;

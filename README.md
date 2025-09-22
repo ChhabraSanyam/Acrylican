@@ -1,95 +1,45 @@
-# Artisan Promotion Platform
+# Acrylican
 
 A comprehensive solution to help local artisans efficiently promote and sell their handcrafted products across multiple online platforms.
 
-## Features
+## 🚀 Features
 
-- AI-powered content generation for product marketing
-- Multi-platform posting automation (Facebook, Instagram, Etsy, Pinterest, etc.)
-- Comprehensive analytics dashboard
-- Secure user authentication and data protection
+- **AI-Powered Content Generation**: Automated product descriptions and marketing content using Google Gemini
+- **Multi-Platform Automation**: Post to Facebook, Instagram, Etsy, Pinterest, and Shopify
+- **Comprehensive Analytics**: Track engagement, sales, and performance across platforms
+- **Secure Authentication**: JWT-based auth with encrypted token storage
+- **File Management**: Secure image upload and processing with Cloud Storage
 
-## Development Setup
+## 🏗️ Architecture
 
-### Prerequisites
+### Production Infrastructure
 
-- Docker and Docker Compose
-- Node.js 18+ (for local frontend development)
-- Python 3.11+ (for local backend development)
+- **Frontend**: React with TypeScript and Tailwind CSS
+- **Backend**: FastAPI with Python 3.11
+- **Database**: PostgreSQL for relational data
+- **Cache**: Redis service
+- **Storage**: Cloud storage (Cloudflare R2)`
 
-### Quick Start with Docker
+### Platform Integration
 
-1. Clone the repository
-2. Copy environment files:
-   ```bash
-   cp backend/.env.example backend/.env
-   cp frontend/.env.example frontend/.env
-   ```
-3. Start all services:
-   ```bash
-   docker-compose up -d
-   ```
+Configure OAuth credentials for social platforms:
 
-### Services
+- Facebook & Instagram
+- Etsy
+- Pinterest
+- Shopify
+- And more...
 
-- **Frontend**: http://localhost:3000 (React with TypeScript and Tailwind CSS)
-- **Backend API**: http://localhost:8000 (FastAPI with automatic docs at /docs)
-- **PostgreSQL**: localhost:5432
-- **Redis**: localhost:6379
+## 🔒 Security Features
 
-### Local Development
+- **JWT Authentication** with secure token storage
+- **Encrypted API Keys** for platform integrations
+- **Rate Limiting** and request validation
+- **Audit Logging** for sensitive operations
 
-#### Backend Development
+## 📊 Monitoring & Analytics
 
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+- **Application Performance**: Built-in metrics and logging
+- **Usage Analytics**: Platform engagement tracking
 
-#### Frontend Development
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-### Running Tests
-
-#### Backend Tests
-```bash
-cd backend
-pytest
-```
-
-#### Frontend Tests
-```bash
-cd frontend
-npm test
-```
-
-## Project Structure
-
-```
-artisan-promotion-platform/
-├── backend/                 # FastAPI backend
-│   ├── app/                # Application code
-│   ├── tests/              # Test files
-│   ├── migrations/         # Database migrations
-│   └── requirements.txt    # Python dependencies
-├── frontend/               # React frontend
-│   ├── src/               # Source code
-│   ├── public/            # Static files
-│   └── package.json       # Node.js dependencies
-└── docker-compose.yml     # Development environment
-```
-
-## Next Steps
-
-1. Configure environment variables in `.env` files
-2. Set up external API keys (Gemini, social platforms)
-3. Run database migrations
-4. Start implementing authentication system
+---

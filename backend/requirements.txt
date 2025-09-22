@@ -1,34 +1,44 @@
+# Backend requirements
+
+# Core FastAPI stack (essential only)
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+
+# Database (PostgreSQL 17 compatible)
 sqlalchemy==2.0.23
 alembic==1.12.1
 psycopg2-binary==2.9.9
+
+# Cache (Redis)
 redis==5.0.1
+
+# Authentication & Security
 pydantic[email]==2.5.0
 pydantic-settings==2.1.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+
+# File handling (minimal)
 python-multipart==0.0.6
 pillow==10.1.0
+aiofiles==23.2.1
+
+# HTTP client
 httpx==0.25.2
+
+# Cloud Storage
 boto3==1.34.0
 google-cloud-storage==2.10.0
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-mock==3.12.0
-pytest-cov==4.1.0
+
+# AI/ML (essential only)
 google-generativeai==0.3.2
+
+# Security & Auth
 authlib==1.2.1
 cryptography==41.0.7
-aiofiles==23.2.1
-playwright==1.40.0
 
-# Security dependencies
-safety==2.3.5
-bandit==1.7.5
+# Rate limiting (lightweight)
 slowapi==0.1.9
 
-# Monitoring dependencies
+# System monitoring
 psutil==5.9.6
-python-json-logger==2.0.7
-prometheus-client==0.17.1
