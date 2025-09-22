@@ -1,8 +1,8 @@
-"""add_engagement_metrics_tables
+"""initial database schema
 
-Revision ID: 345553d5ed4a
-Revises: 1f5fa4a1fe10
-Create Date: 2025-09-19 00:18:21.439936
+Revision ID: 7edd80948858
+Revises: 
+Create Date: 2025-09-21 16:03:14.023197
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '345553d5ed4a'
-down_revision = '1f5fa4a1fe10'
+revision = '7edd80948858'
+down_revision = None
 branch_labels = None
 depends_on = None
 
@@ -33,6 +33,25 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    op.create_table('audit_logs',
+    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('user_id', sa.String(), nullable=True),
+    sa.Column('action', sa.String(), nullable=False),
+    sa.Column('resource_type', sa.String(), nullable=False),
+    sa.Column('resource_id', sa.String(), nullable=True),
+    sa.Column('ip_address', sa.String(), nullable=True),
+    sa.Column('user_agent', sa.Text(), nullable=True),
+    sa.Column('request_method', sa.String(), nullable=True),
+    sa.Column('request_path', sa.String(), nullable=True),
+    sa.Column('details', sa.Text(), nullable=True),
+    sa.Column('action_metadata', sa.JSON(), nullable=True),
+    sa.Column('success', sa.Boolean(), nullable=False),
+    sa.Column('error_message', sa.Text(), nullable=True),
+    sa.Column('sensitivity_level', sa.String(), nullable=False),
+    sa.Column('timestamp', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('content_templates',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
@@ -49,6 +68,29 @@ def upgrade() -> None:
     sa.Column('is_system_template', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('data_deletion_requests',
+    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('deletion_type', sa.String(), nullable=False),
+    sa.Column('reason', sa.String(), nullable=False),
+    sa.Column('requested_by', sa.String(), nullable=False),
+    sa.Column('requested_at', sa.DateTime(), nullable=False),
+    sa.Column('scheduled_for', sa.DateTime(), nullable=False),
+    sa.Column('retention_period_days', sa.Integer(), nullable=False),
+    sa.Column('status', sa.String(), nullable=False),
+    sa.Column('started_at', sa.DateTime(), nullable=True),
+    sa.Column('completed_at', sa.DateTime(), nullable=True),
+    sa.Column('error_message', sa.Text(), nullable=True),
+    sa.Column('export_requested', sa.Boolean(), nullable=True),
+    sa.Column('export_completed', sa.Boolean(), nullable=True),
+    sa.Column('export_download_url', sa.String(), nullable=True),
+    sa.Column('export_expires_at', sa.DateTime(), nullable=True),
+    sa.Column('verification_token', sa.String(), nullable=True),
+    sa.Column('verified_at', sa.DateTime(), nullable=True),
+    sa.Column('request_metadata', sa.JSON(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -267,7 +309,9 @@ def downgrade() -> None:
     op.drop_table('platform_preferences')
     op.drop_table('platform_connections')
     op.drop_table('metrics_aggregations')
+    op.drop_table('data_deletion_requests')
     op.drop_table('content_templates')
+    op.drop_table('audit_logs')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
     # ### end Alembic commands ###

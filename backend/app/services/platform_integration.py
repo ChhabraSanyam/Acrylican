@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 class IntegrationType(str, Enum):
     """Types of platform integration methods"""
     API = "api"
-    BROWSER_AUTOMATION = "browser_automation"
     HYBRID = "hybrid"
 
 
@@ -31,9 +30,6 @@ class Platform(str, Enum):
     FACEBOOK_MARKETPLACE = "facebook_marketplace"
     ETSY = "etsy"
     PINTEREST = "pinterest"
-    MEESHO = "meesho"
-    SNAPDEAL = "snapdeal"
-    INDIAMART = "indiamart"
     SHOPIFY = "shopify"
 
 
@@ -115,10 +111,7 @@ class PlatformConfig(BaseModel):
     api_version: Optional[str] = None
     rate_limit_per_minute: Optional[int] = None
     
-    # Browser Automation Configuration
-    login_url: Optional[str] = None
-    post_url: Optional[str] = None
-    selectors: Optional[Dict[str, str]] = None
+
     
     # Content Formatting
     max_title_length: Optional[int] = None
@@ -291,54 +284,7 @@ class APIBasedIntegration(BasePlatformIntegration):
         pass
 
 
-class BrowserAutomationIntegration(BasePlatformIntegration):
-    """
-    Base class for browser automation-based platform integrations.
-    
-    Provides common functionality for platforms that don't offer APIs,
-    using browser automation with Playwright.
-    """
-    
-    def __init__(self, config: PlatformConfig):
-        super().__init__(config)
-        self.browser = None
-        self.page = None
-        self.session_active = False
-    
-    async def _setup_browser(self):
-        """Setup browser instance for automation"""
-        # This would be implemented with Playwright setup
-        pass
-    
-    async def _navigate_to_login(self):
-        """Navigate to platform login page"""
-        if not self.config.login_url:
-            raise ValueError(f"Login URL not configured for {self.platform.value}")
-        # Browser navigation implementation
-        pass
-    
-    async def _perform_login(self, credentials: PlatformCredentials):
-        """Perform login using browser automation"""
-        # Platform-specific login automation
-        pass
-    
-    async def _navigate_to_post_page(self):
-        """Navigate to the posting page"""
-        if not self.config.post_url:
-            raise ValueError(f"Post URL not configured for {self.platform.value}")
-        # Browser navigation implementation
-        pass
-    
-    async def cleanup_browser(self):
-        """Clean up browser resources"""
-        try:
-            if self.page:
-                await self.page.close()
-            if self.browser:
-                await self.browser.close()
-            self.session_active = False
-        except Exception as e:
-            self.logger.error(f"Error cleaning up browser: {e}")
+
 
 
 class PlatformIntegrationError(Exception):

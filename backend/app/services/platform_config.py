@@ -181,102 +181,9 @@ class PlatformConfigManager:
                 "supports_seo": True
             }
         )
-        
-        # Meesho configuration (Browser automation)
-        self._default_configs[Platform.MEESHO] = PlatformConfig(
-            platform=Platform.MEESHO,
-            integration_type=IntegrationType.BROWSER_AUTOMATION,
-            auth_method=AuthenticationMethod.SESSION_BASED,
-            enabled=True,
-            login_url="https://supplier.meesho.com/login",
-            post_url="https://supplier.meesho.com/products/add",
-            rate_limit_per_minute=10,
-            max_title_length=200,
-            max_description_length=5000,
-            max_hashtags=0,
-            supported_image_formats=["jpg", "jpeg", "png"],
-            max_retries=2,
-            retry_delay_seconds=15,
-            selectors={
-                "email_input": "input[name='email']",
-                "password_input": "input[name='password']",
-                "login_button": "button[type='submit']",
-                "title_input": "input[name='title']",
-                "description_textarea": "textarea[name='description']",
-                "image_upload": "input[type='file']",
-                "submit_button": "button[type='submit']"
-            },
-            custom_settings={
-                "requires_supplier_account": True,
-                "supports_bulk_upload": False,
-                "max_images": 8,
-                "requires_category_selection": True
-            }
-        )
-        
-        # Snapdeal configuration (Browser automation)
-        self._default_configs[Platform.SNAPDEAL] = PlatformConfig(
-            platform=Platform.SNAPDEAL,
-            integration_type=IntegrationType.BROWSER_AUTOMATION,
-            auth_method=AuthenticationMethod.SESSION_BASED,
-            enabled=True,
-            login_url="https://seller.snapdeal.com/login",
-            post_url="https://seller.snapdeal.com/products/add",
-            rate_limit_per_minute=8,
-            max_title_length=150,
-            max_description_length=3000,
-            max_hashtags=0,
-            supported_image_formats=["jpg", "jpeg", "png"],
-            max_retries=2,
-            retry_delay_seconds=20,
-            selectors={
-                "username_input": "input[name='username']",
-                "password_input": "input[name='password']",
-                "login_button": "button.login-btn",
-                "product_title": "input[name='productTitle']",
-                "product_description": "textarea[name='description']",
-                "image_upload": "input[type='file'][accept*='image']",
-                "save_button": "button.save-product"
-            },
-            custom_settings={
-                "requires_seller_account": True,
-                "supports_variants": True,
-                "max_images": 6,
-                "requires_brand_approval": True
-            }
-        )
-        
-        # IndiaMART configuration (Browser automation)
-        self._default_configs[Platform.INDIAMART] = PlatformConfig(
-            platform=Platform.INDIAMART,
-            integration_type=IntegrationType.BROWSER_AUTOMATION,
-            auth_method=AuthenticationMethod.SESSION_BASED,
-            enabled=True,
-            login_url="https://seller.indiamart.com/login",
-            post_url="https://seller.indiamart.com/products/add",
-            rate_limit_per_minute=5,
-            max_title_length=100,
-            max_description_length=2000,
-            max_hashtags=0,
-            supported_image_formats=["jpg", "jpeg", "png"],
-            max_retries=2,
-            retry_delay_seconds=25,
-            selectors={
-                "mobile_input": "input[name='mobile']",
-                "password_input": "input[name='password']",
-                "login_button": "input[type='submit']",
-                "product_name": "input[name='productName']",
-                "product_details": "textarea[name='productDetails']",
-                "image_upload": "input[type='file']",
-                "submit_product": "input[value='Submit Product']"
-            },
-            custom_settings={
-                "requires_business_verification": True,
-                "supports_catalog": True,
-                "max_images": 5,
-                "requires_contact_details": True
-            }
-        )
+
+
+
     
     def get_config(self, platform: Platform) -> Optional[PlatformConfig]:
         """
@@ -401,19 +308,7 @@ class PlatformConfigManager:
             if config.auth_method == AuthenticationMethod.OAUTH2:
                 # OAuth2 specific validation would go here
                 pass
-        
-        # Browser automation specific validation
-        elif config.integration_type == IntegrationType.BROWSER_AUTOMATION:
-            if not config.login_url:
-                errors.append("Login URL is required for browser automation")
-            
-            if not config.selectors:
-                errors.append("Selectors are required for browser automation")
-            else:
-                required_selectors = ["login_button"]
-                for selector in required_selectors:
-                    if selector not in config.selectors:
-                        errors.append(f"Required selector '{selector}' is missing")
+
         
         # Content limits validation - check for 0 specifically since it's invalid
         if config.max_title_length is not None and config.max_title_length <= 0:

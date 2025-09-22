@@ -188,30 +188,6 @@ async def get_supported_platforms():
             "description_max_length": 65535,
             "hashtag_limit": 250,
             "features": ["product_listings", "store_management"]
-        },
-        "meesho": {
-            "name": "Meesho",
-            "type": "marketplace",
-            "title_max_length": 200,
-            "description_max_length": 2000,
-            "hashtag_limit": 10,
-            "features": ["product_listings"]
-        },
-        "snapdeal": {
-            "name": "Snapdeal",
-            "type": "marketplace",
-            "title_max_length": 200,
-            "description_max_length": 2000,
-            "hashtag_limit": 10,
-            "features": ["product_listings"]
-        },
-        "indiamart": {
-            "name": "IndiaMART",
-            "type": "b2b_marketplace",
-            "title_max_length": 250,
-            "description_max_length": 3000,
-            "hashtag_limit": 15,
-            "features": ["product_catalog", "business_listings"]
         }
     }
     

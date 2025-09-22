@@ -2,47 +2,34 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .config import settings
-from .routers import auth, images, content, products, oauth, posts, platforms, preferences, sales, engagement, analytics, privacy, health, monitoring
+from .routers import auth, images, content, products, oauth, posts, platforms, preferences, sales, engagement, analytics, privacy
 from .middleware import SecurityMiddleware, RequestValidationMiddleware, LoggingMiddleware, CSRFProtectionMiddleware
-from .monitoring_middleware import MonitoringMiddleware, DatabaseMonitoringMiddleware, SecurityMonitoringMiddleware
-from .monitoring import initialize_monitoring, shutdown_monitoring
-from .monitoring_config import logger, metrics_collector
 from .security_hardening import configure_security_middleware
 import logging
+import gc
 
 # Configure basic logging (will be enhanced by structured logger)
 logging.basicConfig(
-    level=logging.INFO if settings.environment == "production" else logging.DEBUG,
+    level=logging.WARNING if settings.environment == "production" else logging.INFO,  # Reduced logging for memory
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
+    """Simple application lifespan manager."""
     # Startup
-    logger.info("Starting Artisan Promotion Platform API")
-    await initialize_monitoring()
-    logger.info("Monitoring system initialized")
-    
+    gc.collect()
     yield
-    
     # Shutdown
-    logger.info("Shutting down Artisan Promotion Platform API")
-    await shutdown_monitoring()
-    logger.info("Monitoring system shutdown complete")
+    gc.collect()
 
 app = FastAPI(
-    title="Artisan Promotion Platform API",
+    title="Acrylican API",
     description="API for managing artisan product promotion across multiple platforms",
     version="1.0.0",
     debug=settings.environment == "development",
     lifespan=lifespan
 )
-
-# Add monitoring middleware (order matters - most specific first)
-app.add_middleware(MonitoringMiddleware)
-app.add_middleware(DatabaseMonitoringMiddleware)
-app.add_middleware(SecurityMonitoringMiddleware)
 
 # Add security middleware
 app.add_middleware(SecurityMiddleware)
@@ -64,8 +51,6 @@ app.add_middleware(
 app = configure_security_middleware(app)
 
 # Include routers
-app.include_router(health.router)  # Health checks first
-app.include_router(monitoring.router)  # Production monitoring endpoints
 app.include_router(auth.router)
 app.include_router(images.router)
 app.include_router(content.router)
@@ -81,11 +66,22 @@ app.include_router(privacy.router)
 
 
 
-# Basic health endpoint (detailed health checks are in /health router)
+# Basic endpoints
 @app.get("/")
 async def root():
     return {
-        "message": "Artisan Promotion Platform API",
+        "message": "Acrylican API",
         "version": "1.0.0",
         "status": "running"
+    }
+
+@app.get("/health")
+async def health_check():
+    """Basic health check endpoint."""
+    from datetime import datetime
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "service": "acrylican-api",
+        "version": "1.0.0"
     }

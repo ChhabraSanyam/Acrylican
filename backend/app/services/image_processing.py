@@ -1,5 +1,5 @@
 """
-Image processing service for the Artisan Promotion Platform.
+Image processing service for the Acrylican.
 
 This service handles image compression, thumbnail generation, format validation,
 and optimization for different platform requirements.
@@ -59,24 +59,7 @@ PLATFORM_REQUIREMENTS = {
         'quality': 85,
         'format': 'JPEG'
     },
-    'meesho': {
-        'max_width': 1000,
-        'max_height': 1000,
-        'quality': 80,
-        'format': 'JPEG'
-    },
-    'snapdeal': {
-        'max_width': 1000,
-        'max_height': 1000,
-        'quality': 80,
-        'format': 'JPEG'
-    },
-    'indiamart': {
-        'max_width': 800,
-        'max_height': 800,
-        'quality': 75,
-        'format': 'JPEG'
-    }
+
 }
 
 # Thumbnail configurations

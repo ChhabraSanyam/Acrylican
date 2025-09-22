@@ -1,5 +1,5 @@
 """
-Security utilities and middleware for the Artisan Promotion Platform.
+Security utilities and middleware for the Acrylican.
 
 This module provides comprehensive security measures including:
 - Input validation and sanitization
@@ -211,7 +211,7 @@ class TokenEncryption:
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
-            salt=b'artisan_platform_salt',  # In production, use random salt per user
+            salt=b'acrylican_platform_salt',  # In production, use random salt per user
             iterations=100000,
         )
         key = base64.urlsafe_b64encode(kdf.derive(secret_key.encode()))

@@ -25,9 +25,6 @@ class Platform(str, Enum):
     FACEBOOK_MARKETPLACE = "facebook_marketplace"
     ETSY = "etsy"
     PINTEREST = "pinterest"
-    MEESHO = "meesho"
-    SNAPDEAL = "snapdeal"
-    INDIAMART = "indiamart"
     SHOPIFY = "shopify"
 
 @dataclass
@@ -270,24 +267,7 @@ Format your response as valid JSON:
 - Focus: Product benefits, quality, customer satisfaction
 - CTA: Clear purchase path, related products
 """,
-            Platform.MEESHO: """
-- Title: Clear product name with key features
-- Description: Highlight quality, value, and unique selling points
-- Focus: Value proposition, quality assurance, customer benefits
-- CTA: Encourage orders, reviews, or seller following
-""",
-            Platform.SNAPDEAL: """
-- Title: Product name with key specifications
-- Description: Detailed features, benefits, and quality highlights
-- Focus: Product value, quality, and competitive advantages
-- CTA: Encourage purchases, reviews, or seller ratings
-""",
-            Platform.INDIAMART: """
-- Title: Business-focused product name with specifications
-- Description: Professional product details, bulk options, business benefits
-- Focus: B2B appeal, quality certifications, bulk pricing
-- CTA: Encourage inquiries, quotes, or business partnerships
-"""
+
         }
         
         return specs.get(platform, "General social media best practices apply.")

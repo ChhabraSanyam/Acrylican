@@ -261,7 +261,7 @@ class DataPrivacyService:
     def _generate_export_readme(self, user: User, export_data: Dict[str, Any]) -> str:
         """Generate README file for data export."""
         return f"""
-ARTISAN PROMOTION PLATFORM - USER DATA EXPORT
+Acrylican - USER DATA EXPORT
 =============================================
 
 Export Information:
@@ -300,7 +300,7 @@ For questions about this export, please contact support.
         """Generate data schema documentation."""
         return {
             "version": "1.0",
-            "description": "Data schema for Artisan Promotion Platform user data export",
+            "description": "Data schema for Acrylican user data export",
             "tables": {
                 "user_profile": {
                     "description": "Basic user account information",

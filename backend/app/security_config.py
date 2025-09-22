@@ -1,5 +1,5 @@
 """
-Security configuration for the Artisan Promotion Platform.
+Security configuration for the Acrylican.
 
 This module provides security configuration and utilities for:
 - Production security settings

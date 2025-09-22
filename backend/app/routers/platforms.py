@@ -16,7 +16,6 @@ from ..models import User, PlatformConnection
 from ..services.platform_service import get_platform_service, PlatformService
 from ..services.oauth_service import get_oauth_service, OAuthService
 from ..services.platform_integration import Platform, IntegrationType, AuthenticationMethod
-from ..services.browser_credentials import BrowserCredentials
 import logging
 
 logger = logging.getLogger(__name__)
@@ -96,9 +95,6 @@ async def get_all_platforms(
         Platform.FACEBOOK_MARKETPLACE.value: "Facebook Marketplace",
         Platform.ETSY.value: "Etsy",
         Platform.PINTEREST.value: "Pinterest",
-        Platform.MEESHO.value: "Meesho",
-        Platform.SNAPDEAL.value: "Snapdeal",
-        Platform.INDIAMART.value: "IndiaMART",
         Platform.SHOPIFY.value: "Shopify"
     }
     
@@ -108,9 +104,6 @@ async def get_all_platforms(
         Platform.FACEBOOK_MARKETPLACE.value: "List products on Facebook Marketplace",
         Platform.ETSY.value: "Connect to Etsy for marketplace listings",
         Platform.PINTEREST.value: "Connect to Pinterest for pin creation and management",
-        Platform.MEESHO.value: "Connect to Meesho seller dashboard for product listings",
-        Platform.SNAPDEAL.value: "Connect to Snapdeal for marketplace listings",
-        Platform.INDIAMART.value: "Connect to IndiaMART for B2B product catalog",
         Platform.SHOPIFY.value: "Connect to Shopify store for product management"
     }
     
@@ -120,9 +113,6 @@ async def get_all_platforms(
         Platform.FACEBOOK_MARKETPLACE.value: "Connect Facebook first, then enable Marketplace posting",
         Platform.ETSY.value: "Click 'Connect' to authorize via Etsy OAuth",
         Platform.PINTEREST.value: "Click 'Connect' to authorize via Pinterest Business OAuth",
-        Platform.MEESHO.value: "Enter your Meesho seller credentials to enable automated posting",
-        Platform.SNAPDEAL.value: "Enter your Snapdeal seller credentials to enable automated posting",
-        Platform.INDIAMART.value: "Enter your IndiaMART credentials to enable automated posting",
         Platform.SHOPIFY.value: "Enter your shop domain and click 'Connect' to authorize via Shopify OAuth"
     }
     
@@ -192,9 +182,6 @@ async def get_platform_info(
         Platform.FACEBOOK_MARKETPLACE.value: "Facebook Marketplace", 
         Platform.ETSY.value: "Etsy",
         Platform.PINTEREST.value: "Pinterest",
-        Platform.MEESHO.value: "Meesho",
-        Platform.SNAPDEAL.value: "Snapdeal",
-        Platform.INDIAMART.value: "IndiaMART",
         Platform.SHOPIFY.value: "Shopify"
     }
     
@@ -204,9 +191,6 @@ async def get_platform_info(
         Platform.FACEBOOK_MARKETPLACE.value: "List products on Facebook Marketplace",
         Platform.ETSY.value: "Connect to Etsy for marketplace listings", 
         Platform.PINTEREST.value: "Connect to Pinterest for pin creation and management",
-        Platform.MEESHO.value: "Connect to Meesho seller dashboard for product listings",
-        Platform.SNAPDEAL.value: "Connect to Snapdeal for marketplace listings",
-        Platform.INDIAMART.value: "Connect to IndiaMART for B2B product catalog",
         Platform.SHOPIFY.value: "Connect to Shopify store for product management"
     }
     
@@ -216,9 +200,6 @@ async def get_platform_info(
         Platform.FACEBOOK_MARKETPLACE.value: "Connect Facebook first, then enable Marketplace posting",
         Platform.ETSY.value: "Click 'Connect' to authorize via Etsy OAuth",
         Platform.PINTEREST.value: "Click 'Connect' to authorize via Pinterest Business OAuth",
-        Platform.MEESHO.value: "Enter your Meesho seller credentials to enable automated posting",
-        Platform.SNAPDEAL.value: "Enter your Snapdeal seller credentials to enable automated posting", 
-        Platform.INDIAMART.value: "Enter your IndiaMART credentials to enable automated posting",
         Platform.SHOPIFY.value: "Enter your shop domain and click 'Connect' to authorize via Shopify OAuth"
     }
     
@@ -474,93 +455,6 @@ async def get_setup_wizard_info(
                 "title": "Shopify Authorization",
                 "description": "Authorize the application to manage your Shopify products",
                 "action": "oauth",
-                "required_fields": []
-            }
-        ],
-        Platform.MEESHO.value: [
-            {
-                "step": 1,
-                "title": "Meesho Seller Account",
-                "description": "Enter your Meesho seller credentials",
-                "action": "form",
-                "required_fields": [
-                    {
-                        "name": "email",
-                        "label": "Email",
-                        "type": "email",
-                        "placeholder": "your-email@example.com"
-                    },
-                    {
-                        "name": "password",
-                        "label": "Password",
-                        "type": "password",
-                        "placeholder": "Your Meesho password"
-                    }
-                ]
-            },
-            {
-                "step": 2,
-                "title": "Connection Test",
-                "description": "Test the connection to your Meesho seller dashboard",
-                "action": "test",
-                "required_fields": []
-            }
-        ],
-        Platform.SNAPDEAL.value: [
-            {
-                "step": 1,
-                "title": "Snapdeal Seller Account",
-                "description": "Enter your Snapdeal seller credentials",
-                "action": "form",
-                "required_fields": [
-                    {
-                        "name": "email",
-                        "label": "Email",
-                        "type": "email",
-                        "placeholder": "your-email@example.com"
-                    },
-                    {
-                        "name": "password",
-                        "label": "Password",
-                        "type": "password",
-                        "placeholder": "Your Snapdeal password"
-                    }
-                ]
-            },
-            {
-                "step": 2,
-                "title": "Connection Test",
-                "description": "Test the connection to your Snapdeal seller dashboard",
-                "action": "test",
-                "required_fields": []
-            }
-        ],
-        Platform.INDIAMART.value: [
-            {
-                "step": 1,
-                "title": "IndiaMART Account",
-                "description": "Enter your IndiaMART credentials",
-                "action": "form",
-                "required_fields": [
-                    {
-                        "name": "email",
-                        "label": "Email",
-                        "type": "email",
-                        "placeholder": "your-email@example.com"
-                    },
-                    {
-                        "name": "password",
-                        "label": "Password",
-                        "type": "password",
-                        "placeholder": "Your IndiaMART password"
-                    }
-                ]
-            },
-            {
-                "step": 2,
-                "title": "Connection Test",
-                "description": "Test the connection to your IndiaMART account",
-                "action": "test",
                 "required_fields": []
             }
         ]

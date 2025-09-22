@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Artisan Promotion Platform
+            Acrylican
           </h1>
           <p className="text-gray-600">
             Promote your handcrafted products across multiple platforms

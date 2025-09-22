@@ -118,9 +118,6 @@ class SchedulingService:
             "pinterest": [14, 16, 20, 21],  # 2 PM, 4 PM, 8 PM, 9 PM UTC
             "etsy": [10, 14, 19],  # 10 AM, 2 PM, 7 PM UTC
             "shopify": [12, 15, 18],  # 12 PM, 3 PM, 6 PM UTC
-            "meesho": [10, 14, 18],  # 10 AM, 2 PM, 6 PM UTC (India time adjusted)
-            "snapdeal": [11, 15, 19],  # 11 AM, 3 PM, 7 PM UTC (India time adjusted)
-            "indiamart": [9, 13, 17],  # 9 AM, 1 PM, 5 PM UTC (India time adjusted)
         }
         
         # Days of week preferences (0 = Monday, 6 = Sunday)
@@ -130,9 +127,6 @@ class SchedulingService:
             "pinterest": [5, 6, 0, 1],  # Saturday to Tuesday
             "etsy": [0, 1, 2, 3, 4],  # Monday to Friday
             "shopify": [1, 2, 3, 4],  # Tuesday to Friday
-            "meesho": [0, 1, 2, 3, 4, 5],  # Monday to Saturday
-            "snapdeal": [0, 1, 2, 3, 4, 5],  # Monday to Saturday
-            "indiamart": [0, 1, 2, 3, 4],  # Monday to Friday
         }
     
     def get_optimal_posting_times(
@@ -242,7 +236,7 @@ class SchedulingService:
         
         # Sort platforms by priority (social media first, then marketplaces)
         social_platforms = ["facebook", "instagram", "pinterest"]
-        marketplace_platforms = ["etsy", "shopify", "meesho", "snapdeal", "indiamart"]
+        marketplace_platforms = ["etsy", "shopify"]
         
         sorted_platforms = []
         for platform in platforms:

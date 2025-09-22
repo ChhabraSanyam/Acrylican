@@ -27,8 +27,6 @@ from .platform_registry import PlatformRegistry, get_platform_registry
 from .platform_config import PlatformConfigManager, get_config_manager
 from .oauth_service import get_oauth_service, OAuthService
 from .platform_oauth_integrations import create_oauth_integration
-from .browser_automation import get_browser_automation_service, BrowserCredentials
-from .browser_credentials import get_browser_credential_manager
 from ..models import PlatformConnection
 from ..database import get_db
 
@@ -53,7 +51,6 @@ class PlatformService:
         self.registry = registry or get_platform_registry()
         self.config_manager = config_manager or get_config_manager()
         self.oauth_service = oauth_service or get_oauth_service()
-        self.browser_credential_manager = get_browser_credential_manager()
         self.logger = logging.getLogger(__name__)
     
     def _get_oauth_integration(self, platform: Platform, user_id: str) -> Optional[BasePlatformIntegration]:
@@ -115,28 +112,6 @@ class PlatformService:
             AuthenticationError: If authentication fails
         """
         try:
-            # Check if platform uses browser automation
-            if self.browser_credential_manager.is_browser_platform(platform):
-                if isinstance(credentials, BrowserCredentials):
-                    # Store credentials securely
-                    await self.browser_credential_manager.store_credentials(platform, user_id, credentials)
-                    
-                    # Authenticate with browser automation service
-                    browser_service = await get_browser_automation_service()
-                    success = await browser_service.authenticate_platform(platform, user_id, credentials)
-                    
-                    if success:
-                        self.logger.info(f"Successfully authenticated {user_id} with {platform.value} via browser automation")
-                    else:
-                        self.logger.warning(f"Browser automation authentication failed for {user_id} with {platform.value}")
-                    
-                    return success
-                else:
-                    raise AuthenticationError(
-                        f"Platform {platform.value} requires BrowserCredentials for authentication",
-                        platform
-                    )
-            
             # Try OAuth integration
             oauth_integration = self._get_oauth_integration(platform, user_id)
             if oauth_integration:
@@ -189,11 +164,6 @@ class PlatformService:
             True if connection is valid, False otherwise
         """
         try:
-            # Check if platform uses browser automation
-            if self.browser_credential_manager.is_browser_platform(platform):
-                browser_service = await get_browser_automation_service()
-                return await browser_service.validate_session(platform, user_id)
-            
             # Try OAuth integration
             oauth_integration = self._get_oauth_integration(platform, user_id)
             if oauth_integration:
@@ -231,17 +201,6 @@ class PlatformService:
             PostingError: If posting fails
         """
         try:
-            # Check if platform uses browser automation
-            if self.browser_credential_manager.is_browser_platform(platform):
-                browser_service = await get_browser_automation_service()
-                result = await browser_service.post_content(platform, user_id, content)
-                
-                self.logger.info(
-                    f"Posted to {platform.value} for user {user_id} via browser automation: {result.status.value}"
-                )
-                
-                return result
-            
             # Try OAuth integration
             oauth_integration = self._get_oauth_integration(platform, user_id)
             if oauth_integration:
@@ -480,21 +439,7 @@ class PlatformService:
             True if disconnection successful, False otherwise
         """
         try:
-            # Handle browser automation platforms
-            if self.browser_credential_manager.is_browser_platform(platform):
-                # Delete stored credentials
-                await self.browser_credential_manager.delete_credentials(platform, user_id)
-                
-                # Disconnect from browser automation service
-                browser_service = await get_browser_automation_service()
-                success = await browser_service.disconnect_platform(platform, user_id)
-                
-                if success:
-                    self.logger.info(f"Disconnected {user_id} from {platform.value} via browser automation")
-                
-                return success
-            
-            # Handle other platforms
+            # Handle platforms
             integration = self.registry.get_platform_integration(platform, user_id)
             if not integration:
                 return True  # Already disconnected

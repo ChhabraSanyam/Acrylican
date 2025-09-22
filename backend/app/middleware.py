@@ -1,5 +1,5 @@
 """
-Security middleware for the Artisan Promotion Platform.
+Security middleware for the Acrylican.
 
 This module provides middleware for:
 - Rate limiting

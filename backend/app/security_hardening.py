@@ -43,7 +43,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = csp
         
         # Remove server information
-        response.headers.pop("server", None)
+        if "server" in response.headers:
+            del response.headers["server"]
         
         return response
 
@@ -229,8 +230,8 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     allowed_origins = []
     if is_production:
         allowed_origins = [
-            "https://app.artisan-platform.com",
-            "https://artisan-platform.com"
+            "https://acrylican.com",
+            "https://acrylican.sanyamchhabra.in"
         ]
     else:
         allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
@@ -248,7 +249,7 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     if is_production:
         app.add_middleware(
             TrustedHostMiddleware,
-            allowed_hosts=["api.artisan-platform.com", "artisan-platform.com"]
+            allowed_hosts=["acrylican.com", "acrylican.sanyamchhabra.in"]
         )
     
     # Security headers
