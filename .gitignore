@@ -47,7 +47,7 @@ frontend/build/
 .idea/
 *.swp
 *.swo
-.kiro/
+.kiro
 
 # OS
 .DS_Store

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement } from 'chart.js';
-import { Doughnut, Bar, Line } from 'react-chartjs-2';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import { PlatformSalesBreakdown, PlatformEngagementData, PlatformPerformanceMetrics, TopPerformingProduct, PlatformROIAnalysis } from '../../types/analytics';
 import analyticsService from '../../services/analytics';
 import LoadingSpinner from '../common/LoadingSpinner';

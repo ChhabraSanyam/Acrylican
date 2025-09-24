@@ -184,7 +184,7 @@ class PostCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     description: str = Field(..., min_length=1, max_length=5000)
     hashtags: List[str] = Field(default_factory=list, max_length=50)
-    images: List[str] = Field(..., min_length=1, description="List of image URLs")
+    images: List[str] = Field(default_factory=list, description="List of image URLs")
     target_platforms: List[str] = Field(..., min_length=1, description="List of platform names")
     product_data: Optional[Dict[str, Any]] = None
     platform_specific_content: Optional[Dict[str, Any]] = None

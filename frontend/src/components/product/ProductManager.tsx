@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Product, ProductFormData } from '../../types/product';
 import { ProductService } from '../../services/product';
-import { ProductList } from './ProductList';
-import { ProductForm } from './ProductForm';
-import { ProductDetail } from './ProductDetail';
+import ProductList from './ProductList';
+import ProductForm from './ProductForm';
+import ProductDetail from './ProductDetail';
 
 type ViewMode = 'list' | 'create' | 'edit' | 'detail';
 
-export const ProductManager: React.FC = () => {
+const ProductManager: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
@@ -170,3 +170,5 @@ export const ProductManager: React.FC = () => {
     </div>
   );
 };
+
+export default ProductManager;

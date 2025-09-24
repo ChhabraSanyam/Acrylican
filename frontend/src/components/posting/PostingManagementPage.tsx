@@ -5,6 +5,7 @@ import PostCreationWizard from './PostCreationWizard';
 import SchedulingInterface from './SchedulingInterface';
 import PostStatusDashboard from './PostStatusDashboard';
 import BulkPostingInterface from './BulkPostingInterface';
+import PostDraftViewer from './PostDraftViewer';
 
 type ViewMode = 'dashboard' | 'create' | 'schedule' | 'bulk';
 
@@ -12,6 +13,7 @@ export const PostingManagementPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('dashboard');
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [viewingDraft, setViewingDraft] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -50,6 +52,24 @@ export const PostingManagementPage: React.FC = () => {
   const handleBulkAction = () => {
     handleRefresh();
     setCurrentView('dashboard');
+  };
+
+  const handlePostSelect = (post: Post) => {
+    if (post.status === 'draft' && post.platform_specific_content && Object.keys(post.platform_specific_content).length > 0) {
+      setViewingDraft(post);
+    } else {
+      setSelectedPost(post);
+    }
+  };
+
+  const handlePublishDraft = async (post: Post) => {
+    try {
+      await postService.publishPost({ post_id: post.id });
+      setViewingDraft(null);
+      handleRefresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish post');
+    }
   };
 
   const getViewTitle = () => {
@@ -96,7 +116,7 @@ export const PostingManagementPage: React.FC = () => {
       default:
         return (
           <PostStatusDashboard
-            onPostSelect={setSelectedPost}
+            onPostSelect={handlePostSelect}
             onRefresh={handleRefresh}
           />
         );
@@ -386,6 +406,23 @@ export const PostingManagementPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Draft Viewer Modal */}
+      {viewingDraft && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <PostDraftViewer
+              post={viewingDraft}
+              onEdit={(post) => {
+                setViewingDraft(null);
+                setSelectedPost(post);
+              }}
+              onPublish={handlePublishDraft}
+              onClose={() => setViewingDraft(null)}
+            />
           </div>
         </div>
       )}

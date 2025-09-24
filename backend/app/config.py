@@ -72,6 +72,10 @@ class Settings(BaseSettings):
     api_key_length: int = 32
     token_encryption_enabled: bool = True
     
+    # Rate Limiting
+    rate_limit_calls: int = 100
+    rate_limit_period: int = 60
+    
     # Monitoring
     log_security_events: bool = True
     log_failed_auth: bool = True

@@ -9,7 +9,7 @@ interface ProductFormProps {
   submitLabel?: string;
 }
 
-export const ProductForm: React.FC<ProductFormProps> = ({
+const ProductForm: React.FC<ProductFormProps> = ({
   initialData = {},
   onSubmit,
   onCancel,
@@ -143,4 +143,5 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       </div>
     </form>
   );
-};
+};export 
+default ProductForm;

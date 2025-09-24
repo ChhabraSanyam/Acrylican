@@ -680,6 +680,15 @@ class CloudStorageService:
         """List all images for a user."""
         return await self.provider.list_files(f"users/{user_id}", limit)
     
+    async def get_images_by_ids(self, user_id: str, image_ids: List[str]) -> List[StoredFile]:
+        """Get specific images by their IDs for a user."""
+        try:
+            all_images = await self.list_user_images(user_id, 1000)  # Get more images to search through
+            return [img for img in all_images if img.file_id in image_ids]
+        except Exception as e:
+            logger.error(f"Failed to get images by IDs for user {user_id}: {e}")
+            return []
+    
     async def get_storage_stats(self) -> Dict[str, int]:
         """Get storage usage statistics."""
         try:

@@ -13,7 +13,10 @@ export const contentService = {
    */
   async generateContent(input: ContentGenerationInput): Promise<ContentGenerationResult> {
     try {
-      const response = await apiClient.post('/content/generate', input);
+      // Use longer timeout for content generation (60 seconds)
+      const response = await apiClient.post('/content/generate', input, {
+        timeout: 60000
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Failed to generate content');

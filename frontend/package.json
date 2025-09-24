@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@types/lodash": "^4.17.20",
     "@types/node": "^20.9.0",
     "@types/react": "^18.2.37",

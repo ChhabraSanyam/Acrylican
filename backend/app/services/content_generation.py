@@ -56,21 +56,33 @@ class ContentGenerationService:
     def __init__(self):
         """Initialize the content generation service."""
         self.api_key = settings.gemini_api_key
-        self.model_name = "gemini-pro"
+        self.model_name = "gemini-2.5-flash"
         self.max_retries = 3
         self.retry_delay = 1.0  # seconds
         
         if not self.api_key:
             logger.warning("Gemini API key not configured. Content generation will not work.")
+            self.model = None
             return
             
         try:
             genai.configure(api_key=self.api_key)
             self.model = genai.GenerativeModel(self.model_name)
-            logger.info("Gemini API client initialized successfully")
+            logger.info(f"Gemini API client initialized successfully with model {self.model_name}")
+            
+            # Test the API connection with a simple call
+            test_response = self.model.generate_content("Test connection")
+            if test_response and hasattr(test_response, 'text'):
+                logger.info("Gemini API connection test successful")
+            else:
+                logger.warning("Gemini API connection test returned empty response")
+                
         except Exception as e:
             logger.error(f"Failed to initialize Gemini API client: {e}")
-            raise ContentGenerationError(f"Failed to initialize Gemini API: {e}")
+            logger.error(f"API Key configured: {'Yes' if self.api_key else 'No'}")
+            logger.error(f"API Key length: {len(self.api_key) if self.api_key else 0}")
+            self.model = None
+            # Don't raise here, let the service handle it gracefully
     
     async def generate_content(self, input_data: ContentInput) -> GeneratedContent:
         """
@@ -87,6 +99,9 @@ class ContentGenerationService:
         """
         if not self.api_key:
             raise ContentGenerationError("Gemini API key not configured")
+        
+        if not self.model:
+            raise ContentGenerationError("Gemini API client not initialized")
         
         try:
             # Generate base content
@@ -105,6 +120,9 @@ class ContentGenerationService:
                 platform_specific=platform_content
             )
             
+        except ContentGenerationError:
+            # Re-raise content generation errors as-is
+            raise
         except Exception as e:
             logger.error(f"Content generation failed: {e}")
             raise ContentGenerationError(f"Failed to generate content: {e}")
@@ -124,18 +142,52 @@ class ContentGenerationService:
         """Generate platform-specific content variations."""
         platform_content = {}
         
+        # Create tasks for parallel execution
+        tasks = []
+        valid_platforms = []
+        
         for platform in platforms:
             if platform in Platform.__members__.values():
-                try:
-                    prompt = self._create_platform_prompt(base_content, platform)
-                    response = await self._call_gemini_with_retry(prompt)
-                    platform_content[platform] = self._parse_platform_response(response, platform)
-                except Exception as e:
-                    logger.warning(f"Failed to generate content for {platform}: {e}")
+                valid_platforms.append(platform)
+                task = self._generate_single_platform_content(base_content, platform)
+                tasks.append(task)
+        
+        # Execute all platform content generation in parallel
+        if tasks:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            for i, result in enumerate(results):
+                platform = valid_platforms[i]
+                if isinstance(result, Exception):
+                    logger.warning(f"Failed to generate content for {platform}: {result}")
                     # Use base content as fallback
                     platform_content[platform] = self._format_for_platform(base_content, platform)
+                else:
+                    platform_content[platform] = result
         
         return platform_content
+    
+    async def _generate_single_platform_content(
+        self, 
+        base_content: Dict[str, Any], 
+        platform: str
+    ) -> Dict[str, Any]:
+        """Generate content for a single platform."""
+        try:
+            # Add timeout for individual platform generation
+            prompt = self._create_platform_prompt(base_content, platform)
+            response = await asyncio.wait_for(
+                self._call_gemini_with_retry(prompt, max_retries=2), 
+                timeout=20.0  # 20 second timeout per platform
+            )
+            return self._parse_platform_response(response, platform)
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout generating content for {platform}, using fallback")
+            return self._format_for_platform(base_content, platform)
+        except Exception as e:
+            logger.warning(f"Failed to generate content for {platform}: {e}")
+            # Use base content as fallback
+            return self._format_for_platform(base_content, platform)
     
     def _create_base_content_prompt(self, input_data: ContentInput) -> str:
         """Create prompt for base content generation."""
@@ -193,31 +245,22 @@ Ensure the content is authentic, engaging, and emphasizes the handcrafted nature
         platform_specs = self._get_platform_specifications(platform)
         
         prompt = f"""
-Adapt the following marketing content for {platform.upper()}:
+Quickly adapt this marketing content for {platform.upper()}:
 
-Original Content:
-- Title: {base_content['title']}
-- Description: {base_content['description']}
-- Hashtags: {', '.join(base_content['hashtags'])}
+Original: Title: {base_content['title']}
+Description: {base_content['description'][:200]}...
+Hashtags: {', '.join(base_content['hashtags'][:10])}
 
-Platform Requirements for {platform.upper()}:
 {platform_specs}
 
-Adapt the content following these guidelines:
-1. Optimize title length and style for the platform
-2. Adjust description length and tone appropriately
-3. Select and optimize hashtags for platform best practices
-4. Include platform-specific call-to-action if applicable
-5. Maintain the artisan story and authenticity
-
-Format your response as valid JSON:
+Adapt for {platform.upper()} - be concise and direct. Return only JSON:
 {{
     "title": "Platform-optimized title",
     "description": "Platform-optimized description", 
-    "hashtags": ["#hashtag1", "#hashtag2", ...],
-    "call_to_action": "Platform-specific CTA",
+    "hashtags": ["#hashtag1", "#hashtag2"],
+    "call_to_action": "Platform CTA",
     "character_count": {{"title": 0, "description": 0}},
-    "optimization_notes": "Brief notes on adaptations made"
+    "optimization_notes": "Brief notes"
 }}
 """
         return prompt
@@ -272,36 +315,66 @@ Format your response as valid JSON:
         
         return specs.get(platform, "General social media best practices apply.")
     
-    async def _call_gemini_with_retry(self, prompt: str) -> str:
+    async def _call_gemini_with_retry(self, prompt: str, max_retries: int = None) -> str:
         """Call Gemini API with retry logic."""
+        retries = max_retries if max_retries is not None else self.max_retries
         last_exception = None
         
-        for attempt in range(self.max_retries):
+        for attempt in range(retries):
             try:
                 # Add delay between retries (exponential backoff)
                 if attempt > 0:
                     delay = self.retry_delay * (2 ** (attempt - 1))
+                    logger.info(f"Retrying Gemini API call in {delay} seconds (attempt {attempt + 1})")
                     await asyncio.sleep(delay)
+                
+                logger.info(f"Making Gemini API call (attempt {attempt + 1}/{retries})")
                 
                 # Make the API call
                 response = await asyncio.to_thread(
                     self.model.generate_content, prompt
                 )
                 
-                if response and response.text:
+                logger.info(f"Gemini API response received: {type(response)}")
+                
+                if response and hasattr(response, 'text') and response.text:
+                    logger.info("Successfully extracted text from response")
                     return response.text
+                elif response and hasattr(response, 'candidates') and response.candidates:
+                    logger.info(f"Response has {len(response.candidates)} candidates")
+                    # Handle case where response has candidates but no direct text
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'content') and candidate.content:
+                        if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                            text = candidate.content.parts[0].text
+                            logger.info("Successfully extracted text from candidate")
+                            return text
+                    logger.error("Response candidate has no text content")
+                    raise ContentGenerationError("Response candidate has no text content")
                 else:
-                    raise ContentGenerationError("Empty response from Gemini API")
+                    logger.error(f"Empty or invalid response: {response}")
+                    raise ContentGenerationError("Empty or invalid response from Gemini API")
                     
             except Exception as e:
                 last_exception = e
-                logger.warning(f"Gemini API call attempt {attempt + 1} failed: {e}")
+                logger.warning(f"Gemini API call attempt {attempt + 1} failed: {type(e).__name__}: {e}")
                 
-                if attempt == self.max_retries - 1:
-                    logger.error(f"All {self.max_retries} attempts failed")
+                # Check for specific API errors
+                error_str = str(e).lower()
+                if "api_key_invalid" in error_str or "authentication" in error_str or "401" in error_str:
+                    raise ContentGenerationError(f"Invalid Gemini API key: {e}")
+                elif "quota" in error_str or "rate limit" in error_str or "429" in error_str:
+                    raise ContentGenerationError(f"Gemini API quota exceeded: {e}")
+                elif "safety" in error_str or "blocked" in error_str:
+                    raise ContentGenerationError(f"Content blocked by safety filters: {e}")
+                elif "404" in error_str or "not found" in error_str:
+                    raise ContentGenerationError(f"Gemini model not found - check model name: {e}")
+                
+                if attempt == retries - 1:
+                    logger.error(f"All {retries} attempts failed")
                     break
         
-        raise ContentGenerationError(f"Gemini API call failed after {self.max_retries} attempts: {last_exception}")
+        raise ContentGenerationError(f"Gemini API call failed after {retries} attempts: {last_exception}")
     
     def _parse_content_response(self, response: str) -> Dict[str, Any]:
         """Parse and validate the content generation response."""

@@ -69,8 +69,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if now - timestamp < self.period
         ]
         
-        # Check rate limit
-        if len(self.clients[client_ip]) >= self.calls:
+        # Check rate limit - be more lenient in development
+        is_development = os.getenv("ENVIRONMENT") != "production"
+        if not is_development and len(self.clients[client_ip]) >= self.calls:
             raise HTTPException(
                 status_code=429,
                 detail="Rate limit exceeded. Please try again later."
@@ -214,6 +215,7 @@ class InputSanitizer:
         
         # Basic email validation
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        
         if not re.match(pattern, email):
             raise ValueError("Invalid email format")
         
@@ -255,9 +257,15 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     # Security headers
     app.add_middleware(SecurityHeadersMiddleware)
     
-    # Rate limiting
-    rate_limit_calls = int(os.getenv("RATE_LIMIT_CALLS", "100"))
-    rate_limit_period = int(os.getenv("RATE_LIMIT_PERIOD", "60"))
+    # Rate limiting - more lenient in development
+    if is_production:
+        rate_limit_calls = 100
+        rate_limit_period = 60
+    else:
+        # Much more lenient for development
+        rate_limit_calls = 10000
+        rate_limit_period = 60
+    
     app.add_middleware(RateLimitMiddleware, calls=rate_limit_calls, period=rate_limit_period)
     
     # Gzip compression

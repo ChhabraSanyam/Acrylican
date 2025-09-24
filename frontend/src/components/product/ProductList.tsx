@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../../types/product';
 import { ProductService } from '../../services/product';
-import { ProductCard } from './ProductCard';
+import ProductCard from './ProductCard';
 
 interface ProductListProps {
   onProductSelect?: (product: Product) => void;
@@ -10,7 +10,7 @@ interface ProductListProps {
   refreshTrigger?: number;
 }
 
-export const ProductList: React.FC<ProductListProps> = ({
+const ProductList: React.FC<ProductListProps> = ({
   onProductSelect,
   onProductEdit,
   onProductDelete,
@@ -54,7 +54,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         <span className="ml-2 text-gray-600">Loading products...</span>
       </div>
     );
@@ -62,14 +62,26 @@ export const ProductList: React.FC<ProductListProps> = ({
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        <p>Error: {error}</p>
-        <button
-          onClick={loadProducts}
-          className="mt-2 text-sm underline hover:no-underline"
-        >
-          Try again
-        </button>
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Error loading products</h3>
+            <p className="text-sm text-red-700 mt-1">{error}</p>
+            <div className="mt-3">
+              <button
+                onClick={loadProducts}
+                className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -110,3 +122,5 @@ export const ProductList: React.FC<ProductListProps> = ({
     </div>
   );
 };
+
+export default ProductList;

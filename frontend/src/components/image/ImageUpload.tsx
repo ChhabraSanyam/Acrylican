@@ -81,7 +81,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         prev.map(item => ({ ...item, status: 'uploading' as const }))
       );
 
-      const response = await ImageService.uploadImages(
+      const uploadedImages = await ImageService.uploadImages(
         validFiles,
         (fileIndex, progress) => {
           setUploadProgress(prev => 
@@ -94,26 +94,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         }
       );
 
-      if (response.success) {
-        // Update progress to completed
-        setUploadProgress(prev => 
-          prev.map((item, index) => ({
-            ...item,
-            progress: 100,
-            status: 'completed',
-            result: response.images[index],
-          }))
-        );
+      // Update progress to completed
+      setUploadProgress(prev => 
+        prev.map((item, index) => ({
+          ...item,
+          progress: 100,
+          status: 'completed',
+          result: uploadedImages[index],
+        }))
+      );
 
-        onUploadComplete?.(response.images);
-        
-        // Clear progress after a delay
-        setTimeout(() => {
-          setUploadProgress([]);
-        }, 2000);
-      } else {
-        throw new Error(response.errors?.join(', ') || 'Upload failed');
-      }
+      onUploadComplete?.(uploadedImages);
+      
+      // Clear progress after a delay
+      setTimeout(() => {
+        setUploadProgress([]);
+      }, 2000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Upload failed';
       

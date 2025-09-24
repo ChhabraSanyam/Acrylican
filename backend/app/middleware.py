@@ -144,6 +144,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
     
     async def _check_rate_limits(self, request: Request, client_ip: str) -> None:
         """Check rate limits for the request."""
+        # Skip rate limiting in development
+        from .config import settings
+        if settings.environment == "development":
+            return
+            
         path = request.url.path
         method = request.method
         

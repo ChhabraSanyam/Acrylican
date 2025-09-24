@@ -8,7 +8,7 @@ interface ProductCardProps {
   onDelete?: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onSelect,
   onEdit,
@@ -103,3 +103,5 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </div>
   );
 };
+
+export default ProductCard;

@@ -280,6 +280,45 @@ async def list_user_images(
         raise HTTPException(status_code=500, detail="Failed to list images")
 
 
+@router.post("/by-ids")
+async def get_images_by_ids(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get images by their IDs.
+    """
+    try:
+        image_ids = request.get("image_ids", [])
+        if not image_ids:
+            return {"success": True, "images": []}
+        
+        storage_service = get_storage_service()
+        images = await storage_service.get_images_by_ids(current_user.id, image_ids)
+        
+        return {
+            "success": True,
+            "images": [
+                {
+                    "id": img.file_id,
+                    "original_url": img.url,
+                    "compressed_url": img.url,  # For now, same as original
+                    "thumbnail_url": img.url,   # For now, same as original
+                    "file_size": img.size,
+                    "dimensions": {"width": 0, "height": 0},  # Placeholder
+                    "file_name": img.filename,
+                    "created_at": img.created_at.isoformat()
+                }
+                for img in images
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get images by IDs: {e}")
+        # Fallback to empty list
+        return {"success": True, "images": []}
+
+
 @router.get("/storage/stats")
 async def get_storage_stats(
     current_user: User = Depends(get_current_user)

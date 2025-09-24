@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SetupWizardInfo, SetupWizardStep } from '../../types/platform';
+import { SetupWizardInfo } from '../../types/platform';
 import { platformService } from '../../services/platform';
 
 interface PlatformSetupWizardProps {

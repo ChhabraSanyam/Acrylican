@@ -10,7 +10,7 @@ interface ProductDetailProps {
   onBack: () => void;
 }
 
-export const ProductDetail: React.FC<ProductDetailProps> = ({
+const ProductDetail: React.FC<ProductDetailProps> = ({
   product,
   onEdit,
   onDelete,
@@ -130,3 +130,5 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
     </div>
   );
 };
+
+export default ProductDetail;
