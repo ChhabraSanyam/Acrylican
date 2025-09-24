@@ -228,21 +228,28 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     # Environment-specific settings
     is_production = os.getenv("ENVIRONMENT") == "production"
     
-    # CORS configuration
+    # CORS configuration from environment variables
     allowed_origins = []
+    
     if is_production:
-        allowed_origins = [
-            "https://acrylican.com",
-            "https://acrylican.sanyamchhabra.in"
-        ]
+        # Get allowed origins from environment variable
+        cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+        if cors_origins:
+            # Split by comma and strip whitespace
+            allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+        else:
+            # Fallback to default if no env var is set
+            allowed_origins = ["https://acrylican.com"]
     else:
-        allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+        # Development mode - allow localhost
+        dev_origins = os.getenv("CORS_DEV_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+        allowed_origins = [origin.strip() for origin in dev_origins.split(",") if origin.strip()]
     
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allow_headers=["*"],
         expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"]
     )
