@@ -1,39 +1,40 @@
-import axios from 'axios';
-import { UserLogin, UserRegistration, AuthResult, User } from '../types/auth';
+import axios from "axios";
+import { UserLogin, UserRegistration, AuthResult, User } from "../types/auth";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Token management
 export const tokenManager = {
   getAccessToken: (): string | null => {
-    return localStorage.getItem('access_token');
+    return localStorage.getItem("access_token");
   },
 
   getRefreshToken: (): string | null => {
-    return localStorage.getItem('refresh_token');
+    return localStorage.getItem("refresh_token");
   },
 
   setTokens: (accessToken: string, refreshToken: string): void => {
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
+    localStorage.setItem("access_token", accessToken);
+    localStorage.setItem("refresh_token", refreshToken);
   },
 
   clearTokens: (): void => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
   },
 
   isTokenExpired: (token: string): boolean => {
     try {
-      const parts = token.split('.');
+      const parts = token.split(".");
       if (parts.length !== 3) return true;
       const payload = JSON.parse(atob(parts[1]));
       const currentTime = Date.now() / 1000;
@@ -83,7 +84,7 @@ api.interceptors.response.use(
         } catch (refreshError) {
           // Refresh failed, clear tokens and redirect to login
           tokenManager.clearTokens();
-          window.location.href = '/login';
+          window.location.href = "/login";
           return Promise.reject(refreshError);
         }
       }
@@ -96,47 +97,55 @@ api.interceptors.response.use(
 export const authService = {
   async login(credentials: UserLogin): Promise<AuthResult> {
     try {
-      const response = await api.post('/auth/login', credentials);
+      const response = await api.post("/auth/login", credentials);
       const result: AuthResult = response.data;
 
       if (result.success && result.tokens) {
-        tokenManager.setTokens(result.tokens.access_token, result.tokens.refresh_token);
+        tokenManager.setTokens(
+          result.tokens.access_token,
+          result.tokens.refresh_token
+        );
       }
 
       return result;
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Login failed');
+      throw new Error(error.response?.data?.detail || "Login failed");
     }
   },
 
   async register(userData: UserRegistration): Promise<AuthResult> {
     try {
-      const response = await api.post('/auth/register', userData);
+      const response = await api.post("/auth/register", userData);
       const result: AuthResult = response.data;
 
       if (result.success && result.tokens) {
-        tokenManager.setTokens(result.tokens.access_token, result.tokens.refresh_token);
+        tokenManager.setTokens(
+          result.tokens.access_token,
+          result.tokens.refresh_token
+        );
       }
 
       return result;
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Registration failed');
+      throw new Error(error.response?.data?.detail || "Registration failed");
     }
   },
 
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await api.get('/auth/me');
+      const response = await api.get("/auth/me");
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Failed to get user info');
+      throw new Error(
+        error.response?.data?.detail || "Failed to get user info"
+      );
     }
   },
 
   async refreshToken(): Promise<{ access_token: string; token_type: string }> {
     const refreshToken = tokenManager.getRefreshToken();
     if (!refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     try {
@@ -145,16 +154,16 @@ export const authService = {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Token refresh failed');
+      throw new Error(error.response?.data?.detail || "Token refresh failed");
     }
   },
 
   async logout(): Promise<void> {
     try {
-      await api.post('/auth/logout');
+      await api.post("/auth/logout");
     } catch (error) {
       // Even if logout fails on server, clear local tokens
-      console.warn('Logout request failed, but clearing local tokens');
+      console.warn("Logout request failed, but clearing local tokens");
     } finally {
       tokenManager.clearTokens();
     }

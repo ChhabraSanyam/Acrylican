@@ -42,3 +42,4 @@ slowapi==0.1.9
 
 # System monitoring
 psutil==5.9.6
+
