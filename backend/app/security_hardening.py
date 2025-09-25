@@ -228,9 +228,11 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     
     # Environment-specific settings
     is_production = settings.environment == "production"
+    print(f"DEBUG: is_production = {is_production}, environment = {settings.environment}")
 
     # Use settings.cors_origins for both CORS and TrustedHostMiddleware
     allowed_origins = settings.cors_origins
+    print(f"DEBUG: allowed_origins = {allowed_origins}")
 
     app.add_middleware(
         CORSMiddleware,
@@ -245,10 +247,27 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     if is_production:
         # Extract hostnames from allowed_origins (strip protocol and trailing slashes)
         def extract_hostname(url):
-            return url.split('//')[-1].split('/')[0]
+            if url.startswith('http://') or url.startswith('https://'):
+                return url.split('//')[-1].split('/')[0]
+            else:
+                # If no protocol, assume it's already a hostname
+                return url.split('/')[0]
+        
+        allowed_hosts = []
+        for origin in allowed_origins:
+            hostname = extract_hostname(origin)
+            if hostname and hostname not in allowed_hosts:
+                allowed_hosts.append(hostname)
+        
+        # Add render hostname if not already present
+        if "acrylican.onrender.com" not in allowed_hosts:
+            allowed_hosts.append("acrylican.onrender.com")
+            
+        print(f"DEBUG: allowed_hosts for TrustedHostMiddleware = {allowed_hosts}")
+            
         app.add_middleware(
             TrustedHostMiddleware,
-            allowed_hosts = [extract_hostname(origin) for origin in allowed_origins]
+            allowed_hosts=allowed_hosts
         )
     
     # Security headers

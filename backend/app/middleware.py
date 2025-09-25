@@ -36,12 +36,17 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
         
         try:
-            # 1. HTTPS enforcement (in production)
-            if settings.environment == "production" and not request.url.scheme == "https":
-                return JSONResponse(
-                    status_code=status.HTTP_426_UPGRADE_REQUIRED,
-                    content={"error": "HTTPS required"}
-                )
+            # 1. HTTPS enforcement (in production) - check for forwarded headers from load balancer
+            if settings.environment == "production":
+                # Check X-Forwarded-Proto header for HTTPS (common in production deployments)
+                forwarded_proto = request.headers.get("X-Forwarded-Proto", "").lower()
+                is_https = request.url.scheme == "https" or forwarded_proto == "https"
+                
+                if not is_https:
+                    return JSONResponse(
+                        status_code=status.HTTP_426_UPGRADE_REQUIRED,
+                        content={"error": "HTTPS required"}
+                    )
             
             # 2. Get client identifier
             client_ip = self._get_client_ip(request)
@@ -201,7 +206,7 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
     
     def __init__(self, app: ASGIApp):
         super().__init__(app)
-        self.skip_paths = ["/docs", "/openapi.json", "/health", "/"]
+        self.skip_paths = ["/docs", "/openapi.json", "/health", "/", "/favicon.ico"]
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """Validate request data."""

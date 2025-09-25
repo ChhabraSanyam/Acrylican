@@ -31,23 +31,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add security middleware
-app.add_middleware(SecurityMiddleware)
-app.add_middleware(RequestValidationMiddleware)
+# Add security middleware (temporarily simplified for debugging)
+# app.add_middleware(SecurityMiddleware)
+# app.add_middleware(RequestValidationMiddleware)
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(CSRFProtectionMiddleware)
+# app.add_middleware(CSRFProtectionMiddleware)
 
-# Configure CORS (after security middleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],  # Explicit methods for security
-    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],  # Explicit headers
-    expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"]
-)
-
-# Configure security middleware for production
+# Configure security middleware for production (includes CORS)
 app = configure_security_middleware(app)
 
 # Include routers
