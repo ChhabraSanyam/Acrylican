@@ -31,11 +31,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add security middleware (temporarily simplified for debugging)
-# app.add_middleware(SecurityMiddleware)
-# app.add_middleware(RequestValidationMiddleware)
+# Add security middleware
+app.add_middleware(SecurityMiddleware)
+app.add_middleware(RequestValidationMiddleware)
 app.add_middleware(LoggingMiddleware)
-# app.add_middleware(CSRFProtectionMiddleware)
+app.add_middleware(CSRFProtectionMiddleware)
 
 # Configure security middleware for production (includes CORS)
 app = configure_security_middleware(app)
