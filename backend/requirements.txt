@@ -40,6 +40,3 @@ cryptography==41.0.7
 
 # Rate limiting (lightweight)
 slowapi==0.1.9
-
-# System monitoring
-psutil==5.9.6

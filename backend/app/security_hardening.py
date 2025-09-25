@@ -10,6 +10,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from .config import settings
 import time
 import hashlib
 from collections import defaultdict
@@ -226,25 +227,11 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
     """Configure all security middleware for the application"""
     
     # Environment-specific settings
-    is_production = os.getenv("ENVIRONMENT") == "production"
-    
-    # CORS configuration from environment variables
-    allowed_origins = []
-    
-    if is_production:
-        # Get allowed origins from environment variable
-        cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
-        if cors_origins:
-            # Split by comma and strip whitespace
-            allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
-        else:
-            # Fallback to default if no env var is set
-            allowed_origins = ["https://acrylican.com"]
-    else:
-        # Development mode - allow localhost
-        dev_origins = os.getenv("CORS_DEV_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
-        allowed_origins = [origin.strip() for origin in dev_origins.split(",") if origin.strip()]
-    
+    is_production = settings.environment == "production"
+
+    # Use settings.cors_origins for both CORS and TrustedHostMiddleware
+    allowed_origins = settings.cors_origins
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
@@ -253,12 +240,15 @@ def configure_security_middleware(app: FastAPI) -> FastAPI:
         allow_headers=["*"],
         expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"]
     )
-    
+
     # Trusted host middleware
     if is_production:
+        # Extract hostnames from allowed_origins (strip protocol and trailing slashes)
+        def extract_hostname(url):
+            return url.split('//')[-1].split('/')[0]
         app.add_middleware(
             TrustedHostMiddleware,
-            allowed_hosts=["acrylican.com", "acrylican.sanyamchhabra.in"]
+            allowed_hosts = [extract_hostname(origin) for origin in allowed_origins]
         )
     
     # Security headers
