@@ -6,7 +6,7 @@ from datetime import datetime
 class UserRegistration(BaseModel):
     """Schema for user registration."""
     email: EmailStr
-    password: str = Field(..., min_length=8, description="Password must be at least 8 characters long")
+    password: str = Field(..., min_length=8, max_length=128, description="Password must be between 8-128 characters long")
     business_name: str = Field(..., min_length=1, max_length=255)
     business_type: str = Field(..., min_length=1, max_length=100)
     business_description: Optional[str] = Field(None, max_length=5000)
@@ -17,7 +17,7 @@ class UserRegistration(BaseModel):
 class UserLogin(BaseModel):
     """Schema for user login."""
     email: EmailStr
-    password: str
+    password: str = Field(..., max_length=128, description="Password cannot exceed 128 characters")
 
 
 class UserResponse(BaseModel):

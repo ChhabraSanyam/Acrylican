@@ -2,6 +2,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
+import hashlib
 from .config import settings
 
 # Password hashing context
@@ -12,14 +13,29 @@ class PasswordManager:
     """Handles password hashing and verification using bcrypt."""
     
     @staticmethod
+    def _preprocess_password(password: str) -> str:
+        """Preprocess password to handle bcrypt's 72-byte limit."""
+        # Convert to bytes to check actual byte length
+        password_bytes = password.encode('utf-8')
+        
+        # If password is longer than 72 bytes, hash it first with SHA-256
+        if len(password_bytes) > 72:
+            # Hash with SHA-256 and use hex digest (64 characters)
+            return hashlib.sha256(password_bytes).hexdigest()
+        
+        return password
+    
+    @staticmethod
     def hash_password(password: str) -> str:
         """Hash a password using bcrypt."""
-        return pwd_context.hash(password)
+        processed_password = PasswordManager._preprocess_password(password)
+        return pwd_context.hash(processed_password)
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash."""
-        return pwd_context.verify(plain_password, hashed_password)
+        processed_password = PasswordManager._preprocess_password(plain_password)
+        return pwd_context.verify(processed_password, hashed_password)
 
 
 class JWTManager:
