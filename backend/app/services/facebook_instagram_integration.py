@@ -378,8 +378,8 @@ class FacebookIntegration(APIBasedIntegration):
             listing_data = {
                 "title": content.title,
                 "description": content.description,
-                "price": int(float(content.product_data.get("price", 0)) * 100),  # Price in cents
-                "currency": content.product_data.get("currency", "USD"),
+                "price": int(float(content.product_data.get("price", 0)) * 100),  # Price in paise (Indian currency subunit)
+                "currency": content.product_data.get("currency", "INR"),
                 "condition": content.product_data.get("condition", "NEW"),
                 "availability": content.product_data.get("availability", "IN_STOCK"),
                 "category": content.product_data.get("category", "OTHER"),

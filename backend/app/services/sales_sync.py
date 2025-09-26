@@ -176,7 +176,7 @@ class SalesSyncService:
             platform=sale_data["platform"],
             order_id=sale_data["order_id"],
             amount=sale_data["amount"],
-            currency=sale_data.get("currency", "USD"),
+            currency=sale_data.get("currency", "INR"),
             product_title=sale_data.get("product_title"),
             product_sku=sale_data.get("product_sku"),
             quantity=sale_data.get("quantity", 1),

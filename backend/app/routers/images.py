@@ -10,8 +10,9 @@ import logging
 from ..services.image_processing import image_service, ImageValidationError
 from ..services.cloud_storage import get_storage_service, StorageError
 from ..schemas import ImageUploadResponse, ImageProcessingResult
-from ..dependencies import get_current_user
-from ..models import User
+from ..dependencies import get_current_user, get_db
+from ..models import User, Image
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ async def upload_image(
         start_time = time.time()
         
         # Process the image and upload to cloud storage
-        result = await image_service.process_image(file, platforms, product_id)
+        result = await image_service.process_image(file, platforms, product_id, current_user.id)
         
         processing_time = time.time() - start_time
         
@@ -78,7 +79,7 @@ async def process_image(
         start_time = time.time()
         
         # Process the image and upload to cloud storage
-        result = await image_service.process_image(file, platforms, product_id)
+        result = await image_service.process_image(file, platforms, product_id, current_user.id)
         
         processing_time = time.time() - start_time
         
@@ -220,54 +221,75 @@ async def generate_presigned_download_url(
         raise HTTPException(status_code=500, detail="Failed to generate download URL")
 
 
-@router.delete("/{storage_path:path}")
+@router.delete("/{image_id}")
 async def delete_image(
-    storage_path: str,
-    current_user: User = Depends(get_current_user)
+    image_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
-    Delete an image from cloud storage.
+    Delete an image from both database and cloud storage.
     
-    This permanently removes the file from cloud storage.
+    This permanently removes the image and all its variants.
     """
     try:
-        storage_service = get_storage_service()
-        success = await storage_service.delete_file(storage_path)
+        # Find the image in database
+        image = db.query(Image).filter(
+            Image.id == image_id,
+            Image.user_id == current_user.id
+        ).first()
         
-        if success:
-            return {
-                "success": True,
-                "message": "Image deleted successfully"
-            }
-        else:
-            raise HTTPException(status_code=404, detail="Image not found or could not be deleted")
+        if not image:
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        # Delete from cloud storage
+        storage_service = get_storage_service()
+        storage_results = await image_service.delete_processed_image(image.storage_paths)
+        
+        # Delete from database
+        db.delete(image)
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Image deleted successfully",
+            "storage_results": storage_results
+        }
             
-    except StorageError as e:
+    except HTTPException:
+        raise
+    except Exception as e:
         logger.error(f"Failed to delete image: {e}")
+        db.rollback()
         raise HTTPException(status_code=500, detail="Failed to delete image")
 
 
 @router.get("/user/images")
 async def list_user_images(
     limit: int = Query(100, description="Maximum number of images to return"),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     List all images uploaded by the current user.
     """
     try:
-        storage_service = get_storage_service()
-        images = await storage_service.list_user_images(current_user.id, limit)
+        # Fetch images from database
+        images = db.query(Image).filter(
+            Image.user_id == current_user.id
+        ).order_by(Image.created_at.desc()).limit(limit).all()
         
         return {
             "success": True,
             "images": [
                 {
-                    "file_id": img.file_id,
-                    "filename": img.filename,
-                    "url": img.url,
-                    "size": img.size,
-                    "content_type": img.content_type,
+                    "id": img.id,
+                    "original_url": img.original_url,
+                    "compressed_url": img.compressed_url,
+                    "thumbnail_url": img.thumbnail_urls.get("small", img.compressed_url),
+                    "file_size": img.file_size,
+                    "dimensions": img.dimensions,
+                    "file_name": img.original_filename,
                     "created_at": img.created_at.isoformat()
                 }
                 for img in images
@@ -275,7 +297,7 @@ async def list_user_images(
             "count": len(images)
         }
         
-    except StorageError as e:
+    except Exception as e:
         logger.error(f"Failed to list user images: {e}")
         raise HTTPException(status_code=500, detail="Failed to list images")
 
@@ -283,7 +305,8 @@ async def list_user_images(
 @router.post("/by-ids")
 async def get_images_by_ids(
     request: dict,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Get images by their IDs.
@@ -293,20 +316,23 @@ async def get_images_by_ids(
         if not image_ids:
             return {"success": True, "images": []}
         
-        storage_service = get_storage_service()
-        images = await storage_service.get_images_by_ids(current_user.id, image_ids)
+        # Fetch images from database
+        images = db.query(Image).filter(
+            Image.user_id == current_user.id,
+            Image.id.in_(image_ids)
+        ).all()
         
         return {
             "success": True,
             "images": [
                 {
-                    "id": img.file_id,
-                    "original_url": img.url,
-                    "compressed_url": img.url,  # For now, same as original
-                    "thumbnail_url": img.url,   # For now, same as original
-                    "file_size": img.size,
-                    "dimensions": {"width": 0, "height": 0},  # Placeholder
-                    "file_name": img.filename,
+                    "id": img.id,
+                    "original_url": img.original_url,
+                    "compressed_url": img.compressed_url,
+                    "thumbnail_url": img.thumbnail_urls.get("small", img.compressed_url),
+                    "file_size": img.file_size,
+                    "dimensions": img.dimensions,
+                    "file_name": img.original_filename,
                     "created_at": img.created_at.isoformat()
                 }
                 for img in images

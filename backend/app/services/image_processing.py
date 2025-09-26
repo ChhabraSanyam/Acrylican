@@ -8,12 +8,15 @@ and optimization for different platform requirements.
 import io
 import uuid
 from typing import List, Dict, Tuple, Optional, BinaryIO
-from PIL import Image, ImageOps
+from PIL import Image as PILImage, ImageOps
 from fastapi import UploadFile, HTTPException
 from pydantic import BaseModel
 import logging
 
 from .cloud_storage import get_storage_service, StorageError
+from ..database import get_db
+from ..models import Image
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +129,7 @@ class ImageProcessingService:
                 if img.format not in SUPPORTED_FORMATS:
                     raise ImageValidationError(f"Image format {img.format} not supported. Allowed: {SUPPORTED_FORMATS}")
                 
-                # Check image dimensions (minimum size)
-                if img.width < 100 or img.height < 100:
-                    raise ImageValidationError("Image dimensions too small. Minimum size is 100x100 pixels")
+                # No minimum dimension constraints - only size limit applies
                 
                 # Check for corrupted image
                 img.verify()
@@ -138,7 +139,7 @@ class ImageProcessingService:
                 raise
             raise ImageValidationError(f"Invalid image file: {str(e)}")
     
-    def compress_image(self, image: Image.Image, quality: int = None, max_width: int = None, max_height: int = None) -> bytes:
+    def compress_image(self, image: PILImage.Image, quality: int = None, max_width: int = None, max_height: int = None) -> bytes:
         """
         Compress image with specified quality and dimensions.
         
@@ -164,7 +165,7 @@ class ImageProcessingService:
         # Convert to RGB if necessary (for JPEG)
         if img_copy.mode in ('RGBA', 'LA', 'P'):
             # Create white background for transparency
-            background = Image.new('RGB', img_copy.size, (255, 255, 255))
+            background = PILImage.new('RGB', img_copy.size, (255, 255, 255))
             if img_copy.mode == 'P':
                 img_copy = img_copy.convert('RGBA')
             background.paste(img_copy, mask=img_copy.split()[-1] if img_copy.mode in ('RGBA', 'LA') else None)
@@ -175,7 +176,7 @@ class ImageProcessingService:
         img_copy.save(output, format='JPEG', quality=quality, optimize=True)
         return output.getvalue()
     
-    def generate_thumbnail(self, image: Image.Image, size: Tuple[int, int], quality: int = None) -> bytes:
+    def generate_thumbnail(self, image: PILImage.Image, size: Tuple[int, int], quality: int = None) -> bytes:
         """
         Generate thumbnail from image.
         
@@ -192,11 +193,11 @@ class ImageProcessingService:
         
         # Create thumbnail using PIL's thumbnail method (maintains aspect ratio)
         img_copy = image.copy()
-        img_copy.thumbnail(size, Image.Resampling.LANCZOS)
+        img_copy.thumbnail(size, PILImage.Resampling.LANCZOS)
         
         # Convert to RGB if necessary
         if img_copy.mode in ('RGBA', 'LA', 'P'):
-            background = Image.new('RGB', img_copy.size, (255, 255, 255))
+            background = PILImage.new('RGB', img_copy.size, (255, 255, 255))
             if img_copy.mode == 'P':
                 img_copy = img_copy.convert('RGBA')
             background.paste(img_copy, mask=img_copy.split()[-1] if img_copy.mode in ('RGBA', 'LA') else None)
@@ -206,7 +207,7 @@ class ImageProcessingService:
         img_copy.save(output, format='JPEG', quality=quality, optimize=True)
         return output.getvalue()
     
-    def optimize_for_platform(self, image: Image.Image, platform: str) -> bytes:
+    def optimize_for_platform(self, image: PILImage.Image, platform: str) -> bytes:
         """
         Optimize image for specific platform requirements.
         
@@ -232,7 +233,7 @@ class ImageProcessingService:
             max_height=requirements['max_height']
         )
     
-    async def process_image(self, file: UploadFile, platforms: List[str] = None, product_id: str = None) -> ProcessedImage:
+    async def process_image(self, file: UploadFile, platforms: List[str] = None, product_id: str = None, user_id: str = None) -> ProcessedImage:
         """
         Process uploaded image: validate, compress, generate thumbnails, optimize for platforms, and upload to cloud storage.
         
@@ -256,7 +257,7 @@ class ImageProcessingService:
             file_content = await file.read()
             
             # Open image
-            with Image.open(io.BytesIO(file_content)) as img:
+            with PILImage.open(io.BytesIO(file_content)) as img:
                 # Apply EXIF orientation
                 img = ImageOps.exif_transpose(img)
                 
@@ -338,6 +339,33 @@ class ImageProcessingService:
                         platform_name = image_type.replace('platform_', '')
                         platform_optimized_urls[platform_name] = stored_file.url
                 
+                # Save image metadata to database if user_id is provided
+                if user_id:
+                    from ..database import SessionLocal
+                    db = SessionLocal()
+                    try:
+                        db_image = Image(
+                            id=image_id,
+                            user_id=user_id,
+                            original_filename=original_filename,
+                            original_url=original_url,
+                            compressed_url=compressed_url,
+                            thumbnail_urls=thumbnail_urls,
+                            platform_optimized_urls=platform_optimized_urls,
+                            storage_paths=storage_paths,
+                            file_size=original_size,
+                            dimensions=dimensions,
+                            format=img.format or "JPEG"
+                        )
+                        db.add(db_image)
+                        db.commit()
+                        db.refresh(db_image)
+                    except Exception as e:
+                        logger.error(f"Failed to save image metadata to database: {e}")
+                        db.rollback()
+                    finally:
+                        db.close()
+
                 return ProcessedImage(
                     id=image_id,
                     original_filename=original_filename,
@@ -360,7 +388,7 @@ class ImageProcessingService:
             logger.error(f"Image processing failed: {e}")
             raise HTTPException(status_code=500, detail=f"Image processing failed: {str(e)}")
     
-    def _resize_image(self, image: Image.Image, max_width: int = None, max_height: int = None) -> Image.Image:
+    def _resize_image(self, image: PILImage.Image, max_width: int = None, max_height: int = None) -> PILImage.Image:
         """
         Resize image while maintaining aspect ratio.
         

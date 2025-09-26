@@ -21,6 +21,9 @@ class User(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
+    # Relationships
+    images = relationship("Image", back_populates="user")
+
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, business_name={self.business_name})>"
 
@@ -42,6 +45,29 @@ class Product(Base):
 
     def __repr__(self):
         return f"<Product(id={self.id}, title={self.title}, user_id={self.user_id})>"
+
+
+class Image(Base):
+    __tablename__ = "images"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    original_filename = Column(String, nullable=False)
+    original_url = Column(String, nullable=False)
+    compressed_url = Column(String, nullable=False)
+    thumbnail_urls = Column(JSON, nullable=False)  # {"small": "url", "medium": "url", "large": "url"}
+    platform_optimized_urls = Column(JSON)  # {"facebook": "url", "instagram": "url", ...}
+    storage_paths = Column(JSON, nullable=False)  # {"original": "path", "compressed": "path", ...}
+    file_size = Column(Integer, nullable=False)
+    dimensions = Column(JSON, nullable=False)  # {"width": 800, "height": 600}
+    format = Column(String, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+
+    # Relationships
+    user = relationship("User", back_populates="images")
+
+    def __repr__(self):
+        return f"<Image(id={self.id}, filename={self.original_filename}, user_id={self.user_id})>"
 
 
 class ProductImage(Base):
@@ -277,7 +303,7 @@ class SaleEvent(Base):
     platform = Column(String, nullable=False)  # Platform where the sale occurred
     order_id = Column(String, nullable=False)  # Platform-specific order ID
     amount = Column(DECIMAL(10, 2), nullable=False)  # Sale amount
-    currency = Column(String, nullable=False, default="USD")  # Currency code (USD, EUR, INR, etc.)
+    currency = Column(String, nullable=False, default="INR")  # Currency code (INR, USD, EUR, etc.)
     
     # Product information (may be different from linked product)
     product_title = Column(String)  # Product title at time of sale

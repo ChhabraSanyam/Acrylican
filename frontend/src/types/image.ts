@@ -37,6 +37,5 @@ export const DEFAULT_IMAGE_CONFIG: ImageUploadConfig = {
   maxFileSize: 10 * 1024 * 1024, // 10MB
   maxFiles: 10,
   acceptedFormats: ['image/jpeg', 'image/png', 'image/webp'],
-  maxWidth: 4096,
-  maxHeight: 4096,
+  // No dimension constraints - only size limit
 };

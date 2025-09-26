@@ -698,7 +698,7 @@ class PinterestIntegration(APIBasedIntegration):
                 "type": "product",
                 "product_data": {
                     "price": content.product_data.get("price"),
-                    "currency": content.product_data.get("currency", "USD"),
+                    "currency": content.product_data.get("currency", "INR"),
                     "availability": content.product_data.get("availability", "in stock"),
                     "brand": content.product_data.get("brand"),
                     "category": content.product_data.get("category")

@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { ProductService } from '../services/product';
-import { platformService } from '../services/platform';
-import { analyticsService } from '../services/analytics';
-import { 
-  CubeIcon, 
-  LinkIcon, 
-  PencilSquareIcon, 
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { ProductService } from "../services/product";
+import { platformService } from "../services/platform";
+import { analyticsService } from "../services/analytics";
+import {
+  CubeIcon,
+  LinkIcon,
+  PencilSquareIcon,
   ChartBarIcon,
   ArrowTrendingUpIcon,
   UserGroupIcon,
-  CurrencyDollarIcon
-} from '@heroicons/react/24/outline';
+  CurrencyDollarIcon,
+} from "@heroicons/react/24/outline";
 
 interface DashboardStats {
   totalProducts: number;
@@ -29,7 +29,7 @@ const DashboardPage: React.FC = () => {
     connectedPlatforms: 0,
     totalPosts: 0,
     totalRevenue: 0,
-    recentActivity: []
+    recentActivity: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,28 +44,35 @@ const DashboardPage: React.FC = () => {
         const [products, platforms, salesData] = await Promise.allSettled([
           ProductService.getProducts(),
           platformService.getAllPlatforms(),
-          analyticsService.getSalesDashboard(30, 'USD')
+          analyticsService.getSalesDashboard(30, "INR"),
         ]);
 
         const newStats: DashboardStats = {
-          totalProducts: products.status === 'fulfilled' ? products.value.length : 0,
-          connectedPlatforms: platforms.status === 'fulfilled' 
-            ? platforms.value.filter(p => p.connected).length : 0,
+          totalProducts:
+            products.status === "fulfilled" ? products.value.length : 0,
+          connectedPlatforms:
+            platforms.status === "fulfilled"
+              ? platforms.value.filter((p) => p.connected).length
+              : 0,
           totalPosts: 0, // This would come from a posts API
-          totalRevenue: salesData.status === 'fulfilled' 
-            ? salesData.value.overall_metrics.total_revenue : 0,
-          recentActivity: salesData.status === 'fulfilled' 
-            ? salesData.value.recent_sales.map(sale => ({
-                id: sale.id,
-                action: `New sale: ${sale.product_title} on ${sale.platform}`,
-                time: new Date(sale.occurred_at).toLocaleString()
-              })) : []
+          totalRevenue:
+            salesData.status === "fulfilled"
+              ? salesData.value.overall_metrics.total_revenue
+              : 0,
+          recentActivity:
+            salesData.status === "fulfilled"
+              ? salesData.value.recent_sales.map((sale) => ({
+                  id: sale.id,
+                  action: `New sale: ${sale.product_title} on ${sale.platform}`,
+                  time: new Date(sale.occurred_at).toLocaleString(),
+                }))
+              : [],
         };
 
         setStats(newStats);
       } catch (err) {
-        setError('Failed to load dashboard data');
-        console.error('Dashboard error:', err);
+        setError("Failed to load dashboard data");
+        console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
       }
@@ -76,64 +83,64 @@ const DashboardPage: React.FC = () => {
 
   const quickActions = [
     {
-      title: 'Add New Product',
-      description: 'Upload and manage your products',
+      title: "Add New Product",
+      description: "Upload and manage your products",
       icon: CubeIcon,
-      link: '/products',
-      color: 'bg-blue-500'
+      link: "/products",
+      color: "bg-blue-500",
     },
     {
-      title: 'Connect Platforms',
-      description: 'Link your social media accounts',
+      title: "Connect Platforms",
+      description: "Link your social media accounts",
       icon: LinkIcon,
-      link: '/platforms',
-      color: 'bg-green-500'
+      link: "/platforms",
+      color: "bg-green-500",
     },
     {
-      title: 'Create Post',
-      description: 'Generate and schedule content',
+      title: "Create Post",
+      description: "Generate and schedule content",
       icon: PencilSquareIcon,
-      link: '/posting',
-      color: 'bg-purple-500'
+      link: "/posting",
+      color: "bg-purple-500",
     },
     {
-      title: 'View Analytics',
-      description: 'Track your performance',
+      title: "View Analytics",
+      description: "Track your performance",
       icon: ChartBarIcon,
-      link: '/analytics',
-      color: 'bg-orange-500'
-    }
+      link: "/analytics",
+      color: "bg-orange-500",
+    },
   ];
 
   const statCards = [
     {
-      title: 'Total Products',
+      title: "Total Products",
       value: stats.totalProducts,
       icon: CubeIcon,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100'
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     {
-      title: 'Connected Platforms',
+      title: "Connected Platforms",
       value: stats.connectedPlatforms,
       icon: LinkIcon,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
+      color: "text-green-600",
+      bgColor: "bg-green-100",
     },
     {
-      title: 'Total Posts',
+      title: "Total Posts",
       value: stats.totalPosts,
       icon: UserGroupIcon,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
     },
     {
-      title: 'Revenue (30d)',
+      title: "Revenue (30d)",
       value: `$${stats.totalRevenue}`,
       icon: CurrencyDollarIcon,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100'
-    }
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+    },
   ];
 
   if (loading) {
@@ -150,12 +157,22 @@ const DashboardPage: React.FC = () => {
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error loading dashboard</h3>
+            <h3 className="text-sm font-medium text-red-800">
+              Error loading dashboard
+            </h3>
             <p className="text-sm text-red-700 mt-1">{error}</p>
           </div>
         </div>
@@ -184,7 +201,9 @@ const DashboardPage: React.FC = () => {
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  {stat.title}
+                </p>
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
               </div>
             </div>
@@ -196,7 +215,9 @@ const DashboardPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
-          <p className="text-sm text-gray-600">Get started with these common tasks</p>
+          <p className="text-sm text-gray-600">
+            Get started with these common tasks
+          </p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -214,7 +235,9 @@ const DashboardPage: React.FC = () => {
                     <h3 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600">
                       {action.title}
                     </h3>
-                    <p className="text-xs text-gray-500">{action.description}</p>
+                    <p className="text-xs text-gray-500">
+                      {action.description}
+                    </p>
                   </div>
                 </div>
               </Link>

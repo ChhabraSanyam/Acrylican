@@ -39,7 +39,7 @@ class AnalyticsService:
         start_date: datetime,
         end_date: datetime,
         platforms: Optional[List[str]] = None,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> Dict[str, Any]:
         """
         Get comprehensive platform performance breakdown.
@@ -157,7 +157,7 @@ class AnalyticsService:
         platform_b: str,
         start_date: datetime,
         end_date: datetime,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> Dict[str, Any]:
         """
         Compare performance between two platforms.
@@ -248,7 +248,7 @@ class AnalyticsService:
         end_date: datetime,
         platforms: Optional[List[str]] = None,
         limit: int = 10,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> Dict[str, Any]:
         """
         Get top performing products across platforms.
@@ -401,7 +401,7 @@ class AnalyticsService:
         start_date: datetime,
         end_date: datetime,
         platforms: Optional[List[str]] = None,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> Dict[str, Any]:
         """
         Get ROI analysis for platforms.
@@ -515,7 +515,7 @@ class AnalyticsService:
         start_date: datetime,
         end_date: datetime,
         platforms: Optional[List[str]] = None,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> Dict[str, Any]:
         """
         Get AI-powered analytics insights and recommendations.

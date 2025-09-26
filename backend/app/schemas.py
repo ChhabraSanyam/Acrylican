@@ -427,7 +427,7 @@ class SaleEventCreate(BaseModel):
     platform: str = Field(..., description="Platform where the sale occurred")
     order_id: str = Field(..., description="Platform-specific order ID")
     amount: float = Field(..., gt=0, description="Sale amount")
-    currency: str = Field(default="USD", description="Currency code")
+    currency: str = Field(default="INR", description="Currency code")
     product_title: Optional[str] = Field(None, max_length=500)
     product_sku: Optional[str] = Field(None, max_length=100)
     quantity: int = Field(default=1, gt=0)

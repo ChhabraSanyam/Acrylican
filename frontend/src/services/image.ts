@@ -50,7 +50,7 @@ export class ImageService {
           original_url: response.data.urls.original,
           compressed_url: response.data.urls.compressed,
           thumbnail_url: response.data.urls.thumbnails?.small || response.data.urls.compressed,
-          file_size: 0, // Will be updated by backend
+          file_size: file.size, // Use actual file size
           dimensions: { width: 0, height: 0 }, // Will be updated by backend
           file_name: file.name,
           created_at: new Date().toISOString()

@@ -174,7 +174,7 @@ class SalesTrackingService:
         start_date: datetime, 
         end_date: datetime,
         platforms: Optional[List[str]] = None,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> SalesMetrics:
         """Calculate sales metrics for a given period."""
         query = self.db.query(SaleEvent).filter(
@@ -226,7 +226,7 @@ class SalesTrackingService:
         user_id: str, 
         start_date: datetime, 
         end_date: datetime,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> List[PlatformSalesBreakdown]:
         """Get sales breakdown by platform."""
         query = self.db.query(
@@ -295,7 +295,7 @@ class SalesTrackingService:
         start_date: datetime, 
         end_date: datetime,
         limit: int = 10,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> List[Dict[str, Any]]:
         """Get top-performing products by revenue."""
         query = self.db.query(
@@ -335,7 +335,7 @@ class SalesTrackingService:
         start_date: datetime, 
         end_date: datetime,
         group_by: str = "day",
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> List[Dict[str, Any]]:
         """Get sales trend data for charts."""
         # Use SQLite-compatible date functions
@@ -387,7 +387,7 @@ class SalesTrackingService:
         self, 
         user_id: str, 
         days: int = 30,
-        currency: str = "USD"
+        currency: str = "INR"
     ) -> SalesDashboardData:
         """Get comprehensive dashboard data."""
         end_date = datetime.utcnow()
