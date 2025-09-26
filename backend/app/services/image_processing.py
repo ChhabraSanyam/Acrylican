@@ -125,7 +125,7 @@ class ImageProcessingService:
             file_content = await file.read()
             await file.seek(0)  # Reset file pointer
             
-            with Image.open(io.BytesIO(file_content)) as img:
+            with PILImage.open(io.BytesIO(file_content)) as img:
                 if img.format not in SUPPORTED_FORMATS:
                     raise ImageValidationError(f"Image format {img.format} not supported. Allowed: {SUPPORTED_FORMATS}")
                 
