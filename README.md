@@ -17,8 +17,7 @@ A comprehensive solution to help local artisans efficiently promote and sell the
 - **Frontend**: React with TypeScript and Tailwind CSS
 - **Backend**: FastAPI with Python 3.11
 - **Database**: PostgreSQL for relational data
-- **Cache**: Redis service
-- **Storage**: Cloud storage (Cloudflare R2)`
+- **Storage**: Cloudflare R2 (S3-compatible) for cost-effective file storage
 
 ### Platform Integration
 

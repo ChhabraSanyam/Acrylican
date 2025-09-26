@@ -175,7 +175,7 @@ class OAuthService:
         state = secrets.token_urlsafe(32)
         
         # Store state in cache/session for validation (simplified for now)
-        # In production, this should be stored in Redis or database
+        # In production, this should be stored in database or secure session storage
         
         redirect_uri = f"{self.base_url}{config['redirect_uri']}"
         

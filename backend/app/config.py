@@ -7,9 +7,6 @@ class Settings(BaseSettings):
     # Database Configuration
     database_url: str = "sqlite:///./test.db"
     
-    # Redis Configuration
-    redis_url: str = "redis://localhost:6379"
-    
     # JWT Configuration
     jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production-" + "a" * 32)
     jwt_algorithm: str = "HS256"
@@ -22,26 +19,12 @@ class Settings(BaseSettings):
     # External APIs
     gemini_api_key: str = ""
     
-    # Cloud Storage Configuration
-    storage_provider: str = "aws"  # Options: aws, gcp, cloudflare
-    
-    # AWS S3 Configuration
-    aws_access_key_id: str = ""
-    aws_secret_access_key: str = ""
-    aws_s3_bucket: str = ""
-    aws_region: str = "us-east-1"
-    
-    # Google Cloud Storage Configuration
-    gcp_project_id: str = ""
-    gcp_bucket_name: str = ""
-    gcp_credentials_path: str = ""
-    
-    # Cloudflare R2 Configuration (S3-compatible)
-    cloudflare_account_id: str = ""
+    # Cloudflare R2 Storage Configuration (S3-compatible)
     cloudflare_access_key_id: str = ""
     cloudflare_secret_access_key: str = ""
     cloudflare_bucket_name: str = ""
     cloudflare_endpoint_url: str = ""
+    cloudflare_public_url: str = ""  # For public access to files
     
     # CORS Configuration
     cors_origins: List[str] = ["http://localhost:3000"]

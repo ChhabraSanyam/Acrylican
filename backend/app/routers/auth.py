@@ -176,7 +176,7 @@ async def logout_user(current_user: User = Depends(get_current_user)):
         dict: Logout confirmation
     """
     # In a more sophisticated implementation, you might want to:
-    # 1. Add tokens to a blacklist stored in Redis
+    # 1. Add tokens to a blacklist stored in database
     # 2. Track active sessions
     # For now, we rely on the client to discard the tokens
     
